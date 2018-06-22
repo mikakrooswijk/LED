@@ -22,6 +22,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mikakrooswijk.led.domain.Temperature;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     final String urlAll = "http://94.208.5.119:3030/api/temp/room/alltoday";
     private ProgressBar tempbar;
     private ArrayList<Temperature> tempdataArray = new ArrayList<>();
+    GraphView graph;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        graph = (GraphView) findViewById(R.id.graph);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -265,6 +271,15 @@ public class MainActivity extends AppCompatActivity {
                                         response.getJSONObject(i).getString("time")
                                 );
                                 tempdataArray.add(temp);
+
+                                DataPoint[] dataPoints = new DataPoint[]{};
+
+                                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
+                                        new DataPoint(0, 1),
+                                        new DataPoint(1, 5),
+                                        new DataPoint(2, 3)
+                                });
+                                graph.addSeries(series);
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
