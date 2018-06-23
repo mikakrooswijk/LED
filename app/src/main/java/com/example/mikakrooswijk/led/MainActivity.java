@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
+import android.graphics.Paint;
 import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.annotation.RequiresApi;
@@ -33,8 +35,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar tempbar;
     private ArrayList<Temperature> tempdataArray = new ArrayList<>();
     GraphView graph;
+    Button refresh;
 
 
     @SuppressLint("NewApi")
@@ -57,6 +63,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        graph = (GraphView) findViewById(R.id.graph);
+        graph.setTitle("temperature today");
+
+
 
         maxTemp = (TextView) findViewById(R.id.MaxTempText);
 
@@ -68,17 +79,14 @@ public class MainActivity extends AppCompatActivity {
 
         refresh();
 
-        final Button refresh = findViewById(R.id.refresh);
+        refresh = findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                refresh.setClickable(false);
                 refresh();
             }
         });
 
-
-        graph = (GraphView) findViewById(R.id.graph);
-        graph.setDrawingCacheBackgroundColor(Color.parseColor("#4ddbff"));
-        graph.setTitle("temparature today");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -110,12 +118,12 @@ public class MainActivity extends AppCompatActivity {
                             Double tempDub = Double.parseDouble(resTemp);
                             tempbar.setProgress(tempDub.intValue());
 
-                            if(tempDub.intValue() < 18){
+                            if(tempDub < 21){
                                 tempbar.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
-                            }else if(tempDub.intValue() > 30){
+                            }else if(tempDub > 23){
                                 tempbar.setProgressTintList(ColorStateList.valueOf(Color.RED));
                             }else{
-                                tempbar.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+                                tempbar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("FF8BC34A")));
                             }
 
 
@@ -135,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG);
 
                         }
+                        refresh.setClickable(true);
+
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -258,6 +268,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void refreshDayGraph(){
 
+        graph.removeAllSeries();
+
         SharedPreferences preferences = this.getApplication().getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         final String token = preferences.getString("token", "");
 
@@ -284,11 +296,23 @@ public class MainActivity extends AppCompatActivity {
                             int size = tempdataArray.size();
                             DataPoint[] values = new DataPoint[size];
                             for(int i = 0; i < size; i++){
+                                DateFormat format = new SimpleDateFormat("yyy-MM-dd");
+                                Date date = format.parse(tempdataArray.get(i).getDate());
+                                Log.i("Date", date.toString());
                                 DataPoint d = new DataPoint(i, tempdataArray.get(i).getTemperature());
                                 values[i] = d;
                             }
 
                             LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(values);
+
+                            Paint paint = new Paint();
+                            paint.setStyle(Paint.Style.STROKE);
+                            paint.setStrokeWidth(7);
+                            paint.setPathEffect(new DashPathEffect(new float[]{8, 5}, 0));
+                            paint.setColor(Color.parseColor("#FF8BC34A"));
+                            series.setCustomPaint(paint);
+
+                            graph.removeAllSeries();
                             graph.addSeries(series);
 
                         } catch (Exception e) {
