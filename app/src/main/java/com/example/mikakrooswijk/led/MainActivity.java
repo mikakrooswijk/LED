@@ -306,9 +306,7 @@ public class MainActivity extends AppCompatActivity {
                             LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(values);
 
                             Paint paint = new Paint();
-                            paint.setStyle(Paint.Style.STROKE);
-                            paint.setStrokeWidth(7);
-                            paint.setPathEffect(new DashPathEffect(new float[]{8, 5}, 0));
+                            paint.setStrokeWidth(5);
                             paint.setColor(Color.parseColor("#FF8BC34A"));
                             series.setCustomPaint(paint);
 
