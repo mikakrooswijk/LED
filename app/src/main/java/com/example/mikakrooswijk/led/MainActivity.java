@@ -1,11 +1,14 @@
 package com.example.mikakrooswijk.led;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -47,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     GraphView graph;
 
 
+    @SuppressLint("NewApi")
+    @TargetApi(Build.VERSION_CODES.M)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         graph = (GraphView) findViewById(R.id.graph);
+        graph.setDrawingCacheBackgroundColor(Color.parseColor("#4ddbff"));
+        graph.setTitle("temparature today");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -264,6 +271,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONArray response) {
                         try {
+
+                            tempdataArray = new ArrayList<Temperature>();
                             for(int i = 0; i < response.length(); i++){
                                 Temperature temp = new Temperature(
                                         Double.parseDouble(response.getJSONObject(i).getString("temp")),
@@ -271,16 +280,17 @@ public class MainActivity extends AppCompatActivity {
                                         response.getJSONObject(i).getString("time")
                                 );
                                 tempdataArray.add(temp);
-
-                                DataPoint[] dataPoints = new DataPoint[]{};
-
-                                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-                                        new DataPoint(0, 1),
-                                        new DataPoint(1, 5),
-                                        new DataPoint(2, 3)
-                                });
-                                graph.addSeries(series);
                             }
+                            int size = tempdataArray.size();
+                            DataPoint[] values = new DataPoint[size];
+                            for(int i = 0; i < size; i++){
+                                DataPoint d = new DataPoint(i, tempdataArray.get(i).getTemperature());
+                                values[i] = d;
+                            }
+
+                            LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(values);
+                            graph.addSeries(series);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
